@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",                 // modern JS target
+    "module": "ES2022",                 // emit ESM (no CommonJS)
+    "moduleResolution": "node",         // classic Node-style resolution (no required .js)
+    "lib": ["ES2022", "DOM"],
+    "strict": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "outDir": "dist",
+    "types": ["node", "@playwright/test"],
+    "baseUrl": "."
+  },
+  "include": ["**/*.ts"],
+  "exclude": ["node_modules", "dist"]
+}

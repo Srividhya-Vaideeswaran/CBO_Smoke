@@ -1,12 +1,25 @@
 {
+  "name": "cbo-smoke",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+
   "dependencies": {
     "dotenv": "^17.2.3",
     "mssql": "^12.2.0",
+    "pkg": "^5.8.1",
     "xlsx": "^0.18.5"
   },
+
   "devDependencies": {
     "@playwright/test": "^1.57.0",
-    "@types/node": "^25.0.6"
+    "@types/mssql": "^9.1.9",
+    "@types/node": "^25.0.9"
   },
-  "scripts": {}
+
+  "scripts": {
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:debug": "playwright test --debug"
+  }
 }
