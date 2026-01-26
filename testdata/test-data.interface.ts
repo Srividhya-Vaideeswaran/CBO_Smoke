@@ -73,6 +73,5 @@ Make	:string
 Model	:string
 Year	:string
 SerialCollateralTypeDescription	:string
-
 }
 

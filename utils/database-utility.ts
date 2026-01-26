@@ -22,6 +22,9 @@ export class DatabaseUtility {
   static registrationNumberRepo: string[] = [];
   static contractdebtorRepo: string[] = [];
   static TransactionCreatedDateTime: string[] = [];
+  static contractSerialColllateralRepo: string[] = [];
+  static DebtorFNRepo: string[] = [];
+  static DebtorLNRepo: string[] = [];
 
   /**
    * Initialize database connection configuration
@@ -79,6 +82,8 @@ export class DatabaseUtility {
     }
   }
 
+
+
   static async insertStagingData(testData: ParsedTestData): Promise<void> {
     if (!this.config) this.initialize();
 
@@ -110,12 +115,20 @@ export class DatabaseUtility {
       const contractID = this.generatecontractID(testData.ContractId);
       const contractDebtorID = this.generatecontractDebtorID(testData.ContractDebtorId);
       const TransactionCreatedDateTime = this.generateTransactionCreatedDateTime(testData.TransactionCreatedDateTime);
+      const contractSerialCollateralID = this.generateSerialCollateralID(testData.ContractSerialCollateralId);
+      const DebtorFN = this.generateFirstName(testData.FirstName);
+      const DebtorLN = this.generateLastName(testData.LastName);
 
+      console.log('Generated firstname:',DebtorFN);
+      console.log('Generated lastname:',DebtorLN);
       this.contractRepo.push(contractID);
       this.transactionRepo.push(transactionID);
       this.registrationNumberRepo.push(registrationNumber);
       this.contractdebtorRepo.push(contractDebtorID);
       this.TransactionCreatedDateTime.push(TransactionCreatedDateTime);
+      this.contractSerialColllateralRepo.push(contractSerialCollateralID);
+      this.DebtorFNRepo.push(DebtorFN);
+      this.DebtorLNRepo.push(DebtorLN);
 
       console.log('Generated values:');
       console.log(`  Original reference: ${testData.Reference} -> Generated: ${reference}`);
@@ -123,7 +136,9 @@ export class DatabaseUtility {
       console.log(`  Original RegDate: ${testData.RegistrationDate} -> Generated: ${registrationDate}`);
       console.log(`  Original ExpiryTemplate: ${(testData as any).ExpiryDate} -> Used: ${expiryTemplate}`);
       console.log(`  Generated ExpiryDate: ${expiryDate}`);
-
+      console.log(`  Generated contractSerialCollateralID: ${contractSerialCollateralID}`);
+      console.log('  Generated Firstname:', DebtorFN);
+      console.log('  Generated Lastname:', DebtorLN);
       const query = this.buildInsertQuery(
         contractID,
         transactionID,
@@ -142,14 +157,30 @@ export class DatabaseUtility {
         registrationDate,
         testData.ServiceTypeCode,
         parseInt(testData.Term) || 0,
-        testData.TransactionStatusCode
+        testData.TransactionStatusCode,
+        contractSerialCollateralID,
+        testData.SerialNumberOrVIN,
+        testData.Make,
+        testData.Model,
+        testData.Year,
+        testData.SerialCollateralTypeDescription,
+        contractDebtorID,
+        DebtorFN,
+        DebtorLN,
+        testData.DateOfBirth,
+        testData.Address,
+        testData.City,
+        testData.JurisdictionCode,
+        testData.PostalOrZipCode,
+        testData.CountryCode  
+
       );
 
       await pool.request().query(query);
 
       console.log(`✓ Inserted TransactionId ${transactionID} into CBO DB Staging table`);
 
-      await this.addRowDetailsToLogFile(testData, reference, transactionID, registrationNumber, registrationDate, expiryDate);
+      await this.addRowDetailsToLogFile(testData, reference, transactionID, registrationNumber, registrationDate, expiryDate,contractSerialCollateralID);
 
       await pool.close();
     } catch (error) {
@@ -189,6 +220,33 @@ export class DatabaseUtility {
     }
     return ContractId;
   }
+   private static generateFirstName(FirstName: string): string {
+  if (FirstName === '$GetFirstName') {
+    const now = new Date();
+
+    const formattedDate =
+      `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_` +
+      `${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}`;
+
+    return `CBOSmokeFN${formattedDate}`;
+  }
+  return FirstName;
+}
+
+
+  private static generateLastName(LastName: string): string {
+  if (LastName === '$GetLastName') {
+    const now = new Date();
+
+    const formattedDate =
+      `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_` +
+      `${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}`;
+
+    return `CBOSmokeLN${formattedDate}`;
+  }
+  return LastName;
+}
+
 
   private static generatecontractDebtorID(contractDebtorID: string): string {
     if (contractDebtorID === '$GetContractDebtorID') {
@@ -199,12 +257,21 @@ export class DatabaseUtility {
     return contractDebtorID;
   }
 
+  private static generateSerialCollateralID(ContractSerialCollateralId: string): string {
+    if (ContractSerialCollateralId === '$GetContractSerialCollateralId') {
+      const now = new Date();
+      const timestamp = now.getTime().toString().slice(-10);
+      return `${timestamp}`;
+    }
+    return ContractSerialCollateralId;
+  }
+
   private static generateTransactionCreatedDateTime(TransactionCreatedDateTime: string): string {
     if (TransactionCreatedDateTime === '$GetTransactionCreatedDateTime') {
       return new Date().toISOString(); 
   }
   return TransactionCreatedDateTime;
-}
+}/*generateSerialCollateralID*/
 
   private static generateTransactionID(transactionTemplate: string): string {
     if (transactionTemplate === '$GetTransactionID') {
@@ -278,13 +345,38 @@ return `${province}${timestamp}`;
     RegistrationDate: any,
     ServiceTypeCode: string,
     Term: number,
-    TransactionStatusCode: string
+    TransactionStatusCode: string,
+    contractSerialCollateralID: string,
+    SerialNumberOrVIN: string,
+    Make: string,
+    Model: string,
+    Year: string,
+    SerialCollateralTypeDescription: string,
+    contractDebtorID: string,
+    DebtorFN: string,
+    DebtorLN: string,
+    DateOfBirth: string,
+    Address?: string,
+    City?: string,
+    JurisdictionCode?: string,
+    PostalOrZipCode?: string,
+    CountryCode?: string
+
   ): string {
     const safeValue = (val: any): string => val ?? '';
 
     const vinContractInsert = `INSERT INTO [dbo].[StagingLienInfo] ([ContractId] ,[TransactionId] ,[TransactionCreatedDateTime] ,[CorporationCode] ,[BaseRegistrationNumber] ,[AmendmentDate] ,[AmendmentRegistrationNumber] ,[DischargeDate] ,[DischargeRegistrationNumber] ,[ExpiryDate] ,[JurisdictionCode] ,[LienStatusCode] ,[LoanAmount] ,[Reference] ,[RegistrationDate] ,[ServiceTypeCode] ,[Term] ,[TransactionStatusCode] ,[Processed] ,[IsDeleted] ,[CreatedDateTime] ,[UpdatedDateTime] ,[SequenceNumber] ,[AuditData]) VALUES ('${safeValue(contractID)}','${safeValue(TransactionId)}','${safeValue(TransactionCreatedDateTime)}','${safeValue(CorporationCode)}','${safeValue(BaseRegistrationNumber)}',NULL,NULL,NULL,NULL, '${safeValue(ExpiryDate)}', '${safeValue(LienJurisdictionCode)}', '${safeValue(LienStatusCode)}', ${safeValue(LoanAmount) || 0}, '${safeValue(Reference)}', '${safeValue(RegistrationDate)}', '${safeValue(ServiceTypeCode)}', ${Term || 0}, '${safeValue(TransactionStatusCode)}','', 0, GETDATE(), GETDATE(), 1, '')`;
-    console.log('Insert Query:', vinContractInsert);
-    return vinContractInsert;
+    //console.log('Insert Query:', vinContractInsert);
+    const serialCollateralInsert = `INSERT INTO [dbo].[StagingSerialCollateral] ([TransactionId],[ContractSerialCollateralId] ,[SerialNumberOrVIN] ,[Make] ,[Model] ,[Year] ,[SequenceNumber],[SerialCollateralTypeDescription] ,[ModificationTypeCode],[IsDeleted] ,[CreatedDateTime] ,[UpdatedDateTime]) VALUES ('${safeValue(TransactionId)}','${safeValue(contractSerialCollateralID)}','${safeValue(SerialNumberOrVIN)}','${safeValue(Make)}','${safeValue(Model)}','${safeValue(Year)}',1,'${safeValue(SerialCollateralTypeDescription)}','ORIGINAL', 0, GETDATE(), GETDATE())`;
+    console.log('Insert Query:', serialCollateralInsert);
+    const debtorNameInsert = `INSERT INTO [dbo].[StagingDebtor] ([TransactionId],[ContractDebtorId] ,[FirstName] ,[MiddleName] ,[LastName] ,[DateOfBirth] ,[BusinessName],[ModificationTypeCode],[IsLVSGenerated],[IsSystemGenerated],[DebtorSourceTypeCode],[IsDeleted] ,[CreatedDateTime] ,[UpdatedDateTime]) VALUES ('${safeValue(TransactionId)}','${safeValue(contractDebtorID)}','${safeValue(DebtorFN)}','','${safeValue(DebtorLN)}','${(DateOfBirth)}','','ORIGINAL',0,0,'UI',0,GETDATE(), GETDATE())`;
+    console.log('Insert Query:', debtorNameInsert);   
+    const debtorAddressInsert = `INSERT INTO [dbo].[StagingDebtorAddress] ([TransactionId],[ContractDebtorId] ,[Address] ,[City] ,[JurisdictionCode] ,[JurisdictionName],[PostalOrZipCode] ,[CountryCode],[CountryName],[IsDeleted] ,[CreatedDateTime] ,[UpdatedDateTime]) VALUES ('${safeValue(TransactionId)}','${safeValue(contractDebtorID)}','${safeValue(Address)}','${safeValue(City)}','${safeValue(JurisdictionCode)}','','${safeValue(PostalOrZipCode)}','${safeValue(CountryCode)}','',0,GETDATE(), GETDATE())`;
+    console.log('Insert Query:', debtorAddressInsert);
+   
+    return vinContractInsert + ';' + serialCollateralInsert + ';' + debtorNameInsert + ';' + debtorAddressInsert ;
+    //return serialCollateralInsert;
+   
   }
 
   private static async addRowDetailsToLogFile(
@@ -293,7 +385,8 @@ return `${province}${timestamp}`;
     generatedTransactionID: string,
     generatedRegistrationNumber: string,
     processedRegistrationDate: string,
-    processedExpiryDate: string
+    processedExpiryDate: string,
+    processedcontractSerialCollateralID: string
   ): Promise<void> {
     try {
       if (!fs.existsSync(this.logDirectory)) {
