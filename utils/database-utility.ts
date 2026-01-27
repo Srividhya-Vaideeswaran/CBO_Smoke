@@ -366,15 +366,23 @@ return `${province}${timestamp}`;
     const safeValue = (val: any): string => val ?? '';
 
     const vinContractInsert = `INSERT INTO [dbo].[StagingLienInfo] ([ContractId] ,[TransactionId] ,[TransactionCreatedDateTime] ,[CorporationCode] ,[BaseRegistrationNumber] ,[AmendmentDate] ,[AmendmentRegistrationNumber] ,[DischargeDate] ,[DischargeRegistrationNumber] ,[ExpiryDate] ,[JurisdictionCode] ,[LienStatusCode] ,[LoanAmount] ,[Reference] ,[RegistrationDate] ,[ServiceTypeCode] ,[Term] ,[TransactionStatusCode] ,[Processed] ,[IsDeleted] ,[CreatedDateTime] ,[UpdatedDateTime] ,[SequenceNumber] ,[AuditData]) VALUES ('${safeValue(contractID)}','${safeValue(TransactionId)}','${safeValue(TransactionCreatedDateTime)}','${safeValue(CorporationCode)}','${safeValue(BaseRegistrationNumber)}',NULL,NULL,NULL,NULL, '${safeValue(ExpiryDate)}', '${safeValue(LienJurisdictionCode)}', '${safeValue(LienStatusCode)}', ${safeValue(LoanAmount) || 0}, '${safeValue(Reference)}', '${safeValue(RegistrationDate)}', '${safeValue(ServiceTypeCode)}', ${Term || 0}, '${safeValue(TransactionStatusCode)}','', 0, GETDATE(), GETDATE(), 1, '')`;
-    //console.log('Insert Query:', vinContractInsert);
+    console.log('Insert Query:', vinContractInsert);
     const serialCollateralInsert = `INSERT INTO [dbo].[StagingSerialCollateral] ([TransactionId],[ContractSerialCollateralId] ,[SerialNumberOrVIN] ,[Make] ,[Model] ,[Year] ,[SequenceNumber],[SerialCollateralTypeDescription] ,[ModificationTypeCode],[IsDeleted] ,[CreatedDateTime] ,[UpdatedDateTime]) VALUES ('${safeValue(TransactionId)}','${safeValue(contractSerialCollateralID)}','${safeValue(SerialNumberOrVIN)}','${safeValue(Make)}','${safeValue(Model)}','${safeValue(Year)}',1,'${safeValue(SerialCollateralTypeDescription)}','ORIGINAL', 0, GETDATE(), GETDATE())`;
     console.log('Insert Query:', serialCollateralInsert);
     const debtorNameInsert = `INSERT INTO [dbo].[StagingDebtor] ([TransactionId],[ContractDebtorId] ,[FirstName] ,[MiddleName] ,[LastName] ,[DateOfBirth] ,[BusinessName],[ModificationTypeCode],[IsLVSGenerated],[IsSystemGenerated],[DebtorSourceTypeCode],[IsDeleted] ,[CreatedDateTime] ,[UpdatedDateTime]) VALUES ('${safeValue(TransactionId)}','${safeValue(contractDebtorID)}','${safeValue(DebtorFN)}','','${safeValue(DebtorLN)}','${(DateOfBirth)}','','ORIGINAL',0,0,'UI',0,GETDATE(), GETDATE())`;
     console.log('Insert Query:', debtorNameInsert);   
     const debtorAddressInsert = `INSERT INTO [dbo].[StagingDebtorAddress] ([TransactionId],[ContractDebtorId] ,[Address] ,[City] ,[JurisdictionCode] ,[JurisdictionName],[PostalOrZipCode] ,[CountryCode],[CountryName],[IsDeleted] ,[CreatedDateTime] ,[UpdatedDateTime]) VALUES ('${safeValue(TransactionId)}','${safeValue(contractDebtorID)}','${safeValue(Address)}','${safeValue(City)}','${safeValue(JurisdictionCode)}','','${safeValue(PostalOrZipCode)}','${safeValue(CountryCode)}','',0,GETDATE(), GETDATE())`;
     console.log('Insert Query:', debtorAddressInsert);
-   
-    return vinContractInsert + ';' + serialCollateralInsert + ';' + debtorNameInsert + ';' + debtorAddressInsert ;
+    const lienInfoUpdate = `
+DECLARE @BatchId UNIQUEIDENTIFIER = NEWID();
+UPDATE [dbo].[StagingLienInfo]
+SET [BatchId] = @BatchId
+WHERE [Processed] = 0
+  AND [IsDeleted] = 0;
+`;
+    
+
+    return vinContractInsert + ';' + serialCollateralInsert + ';' + debtorNameInsert + ';' + debtorAddressInsert + ';' + lienInfoUpdate;
     //return serialCollateralInsert;
    
   }
