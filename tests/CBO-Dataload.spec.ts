@@ -5,6 +5,9 @@ import { DatabaseUtility } from '../utils/database-utility';
 import dotenv from 'dotenv';
 import path from 'path';
 dotenv.config();
+import { RCLogin } from '../pages/RCLogin';
+import { TriggerHangfireJob } from '../pages/HangfireJob';
+
 
 test.setTimeout(600000)
 const testCaseID = 'TC01_CBO_2under30Flag';
@@ -16,7 +19,7 @@ const testData: ParsedTestData = TestDataManager.loadDataRow(1); // Load first r
 console.log(`[CBO Smoke] Test Data Loaded: ${JSON.stringify(testData)}`);
 console.log(`[CBO Smoke] Loaded test data row 1`);
 
-test('insert staging (ESM)', async () => {
+test('insert staging (ESM)', async ({ page }) => {
   // Clear repos (access statics)
   (DatabaseUtility as any).contractRepo = [];
   (DatabaseUtility as any).transactionRepo = [];
@@ -25,5 +28,11 @@ test('insert staging (ESM)', async () => {
   await DatabaseUtility.insertStagingData(testData);
 
   const contractRepo = (DatabaseUtility as any).contractRepo as string[];
+
   expect(contractRepo.length).toBeGreaterThan(0);
+
+  await RCLogin.login(page, process.env.baseURL || '', process.env.username || '', process.env.password || '');
+  // Get processing jobs count using the new function
+  await TriggerHangfireJob(page);
+
 });
