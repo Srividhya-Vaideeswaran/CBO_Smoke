@@ -25,6 +25,7 @@ export class DatabaseUtility {
   static contractSerialColllateralRepo: string[] = [];
   static DebtorFNRepo: string[] = [];
   static DebtorLNRepo: string[] = [];
+  static APIIDRepo: string[] = [];
 
   /**
    * Initialize database connection configuration
@@ -118,6 +119,7 @@ export class DatabaseUtility {
       const contractSerialCollateralID = this.generateSerialCollateralID(testData.ContractSerialCollateralId);
       const DebtorFN = this.generateFirstName(testData.FirstName);
       const DebtorLN = this.generateLastName(testData.LastName);
+      const APIID = this.generateAPIID(testData.APIid);
 
       console.log('Generated firstname:',DebtorFN);
       console.log('Generated lastname:',DebtorLN);
@@ -129,6 +131,7 @@ export class DatabaseUtility {
       this.contractSerialColllateralRepo.push(contractSerialCollateralID);
       this.DebtorFNRepo.push(DebtorFN);
       this.DebtorLNRepo.push(DebtorLN);
+      this.APIIDRepo.push(APIID);
 
       console.log('Generated values:');
       console.log(`  Original reference: ${testData.Reference} -> Generated: ${reference}`);
@@ -247,6 +250,20 @@ export class DatabaseUtility {
   return LastName;
 }
 
+/* generateAPIID*/
+
+ private static generateAPIID(APIid: string): string {
+  if (APIid === '$GetAPIID') {
+    const now = new Date();
+
+    const formattedDate =
+      `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_` +
+      `${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}`;
+
+    return `${formattedDate}`;
+  }
+  return APIid;
+}
 
   private static generatecontractDebtorID(contractDebtorID: string): string {
     if (contractDebtorID === '$GetContractDebtorID') {

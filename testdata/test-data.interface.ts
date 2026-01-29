@@ -34,6 +34,29 @@ Make	:string
 Model	:string
 Year	:string
 SerialCollateralTypeDescription	:string
+APIid: string
+APIproviderCode: string
+APIproviderName: string
+APIreference1: string
+APIserialNumberOrVIN: string
+APImake: string
+APImodel: string
+APItrimOrStyle: string  
+APItype: string
+APIyear: string
+APIfirstName: string  
+APIlastName: string
+APIdateOfBirth: string
+APIaddressType: string
+APIaddress: string
+APIcity: string
+APIjurisdiction: string
+APIpostalOrZipCode: string
+APIcountry: string
+APIcmsLenderCode: string
+APIproviderLenderName: string
+APIapplicationType: string
+APIloanType: string
 }   
 
 
@@ -73,5 +96,28 @@ Make	:string
 Model	:string
 Year	:string
 SerialCollateralTypeDescription	:string
+APIid: string
+APIproviderCode: string
+APIproviderName: string
+APIreference1: string
+APIserialNumberOrVIN: string
+APImake: string
+APImodel: string
+APItrimOrStyle: string  
+APItype: string
+APIyear: string
+APIfirstName: string  
+APIlastName: string
+APIdateOfBirth: string
+APIaddressType: string
+APIaddress: string
+APIcity: string
+APIjurisdiction: string
+APIpostalOrZipCode: string
+APIcountry: string
+APIcmsLenderCode: string
+APIproviderLenderName: string
+APIapplicationType: string
+APIloanType: string
 }
 
