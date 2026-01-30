@@ -12,7 +12,18 @@ export async function TriggerHangfireJob(page: Page): Promise<string> {
 
 
   // Click the Processing link inside the iframe
-  await page.locator('iframe').contentFrame().getByRole('link', { name: 'Processing' }).click();
+  //await page.locator('iframe').contentFrame().getByRole('link', { name: 'Processing' }).click();
+  await page
+  .frameLocator('iframe')
+  .locator('#stats a[href*="/hangfire/jobs/processing"]')
+  .waitFor({ state: 'visible' });
+
+await page
+  .frameLocator('iframe')
+  .locator('#stats a[href*="/hangfire/jobs/processing"]')
+  .click();
+
+
   await page.waitForTimeout(50000);
   // Wait for the processing jobs table or count to be visible (adjust selector as needed)
   const frame = await page.frameLocator('iframe');
