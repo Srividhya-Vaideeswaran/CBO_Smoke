@@ -29,11 +29,15 @@ export async function fetchAccessToken(): Promise<TokenResponse> {
   const response = await fetch(tokenUrl, {
     method: "POST",
     headers: {
-      Authorization: `Basic ${basicAuth}`,
-      "Content-Type": "application/x-www-form-urlencoded",
+        "Content-Type": "application/x-www-form-urlencoded",
     },
-    body,
-  });
+    body:new URLSearchParams({
+    grant_type: 'client_credentials',
+    client_id: process.env.CBO_CLIENT_ID || '',
+    client_secret: process.env.CBO_CLIENT_SECRET || '',
+    scope: "cbo_web_api" // optional
+  })
+});
 
   
   if (!response.ok) {
