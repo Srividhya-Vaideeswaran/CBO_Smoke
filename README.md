@@ -9,7 +9,6 @@ This project contains comprehensive Playwright-based smoke tests for validating 
 ## Prerequisites
 
 - Node.js (v18 or higher)
-- Yarn package manager
 - Access to CBO database (SQL Server)
 - Valid CBO authentication credentials
 
