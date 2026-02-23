@@ -5,6 +5,9 @@
     "moduleResolution": "node",         // classic Node-style resolution (no required .js)
     "lib": ["ES2022", "DOM"],
     "strict": true,
+    "noUncheckedIndexedAccess": true,   // safer array/object access
+    "noImplicitOverride": true,         // explicit override keyword required
+    "noPropertyAccessFromIndexSignature": true, // use bracket notation for index signatures
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,

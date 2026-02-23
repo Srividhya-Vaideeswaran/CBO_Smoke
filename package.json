@@ -12,14 +12,16 @@
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
-    "@playwright/test": "^1.58.1",
+    "@playwright/test": "1.57.0",
     "@types/mssql": "^9.1.9",
     "@types/node": "^25.1.0",
     "@types/ssh2-sftp-client": "^9.0.6"
   },
   "scripts": {
     "test": "playwright test",
+    "test:only": "playwright test",
     "test:ui": "playwright test --ui",
-    "test:debug": "playwright test --debug"
+    "test:debug": "playwright test --debug",
+    "summary": "npx tsx scripts/generate-summary-report.ts"
   }
 }

@@ -6,3 +6,12 @@ node_modules/
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
+
+# Generated reports
+TEST-SUMMARY-REPORT.html
+
+# Documentation
+CODING_STANDARDS.md
+
+# Test logs
+/test-logs/

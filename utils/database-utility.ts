@@ -5,7 +5,7 @@
  */
 
 import sql from 'mssql';
-import type { ParsedTestData } from '../testdata/test-data.interface';
+import type { ParsedTestData } from './test-data.interface';
 import fs from 'fs';
 import path from 'path';
 import test from '@playwright/test';
@@ -28,14 +28,30 @@ export class DatabaseUtility {
   static APIIDRepo: string[] = [];
 
   /**
-   * Initialize database connection configuration
+   * Initialize database connection configuration using environment variables.
+   *
+   * @param {string} [connectionString] - Optional connection string (currently unused)
+   * @throws {Error} If Windows Authentication is attempted or required credentials are missing
+   *
+   * @remarks
+   * Requires the following environment variables:
+   * - DB_CBO_SERVER: Database server address
+   * - DB_CBO_DATABASE: Database name
+   * - DB_CBO_USER: SQL Server username
+   * - DB_CBO_PASSWORD: SQL Server password
+   * - DB_USE_WINDOWS_AUTH: Set to 'false' for SQL authentication
+   *
+   * @example
+   * ```typescript
+   * DatabaseUtility.initialize();
+   * ```
    */
   static initialize(connectionString?: string): void {
-    const server = process.env.DB_CBO_SERVER || 'MRKREGDBVWQA43.DHLTD.CORP';
-    const database = process.env.DB_CBO_DATABASE || 'CBO_QA';
-    const user = process.env.DB_CBO_USER?.trim();
-    const password = process.env.DB_CBO_PASSWORD?.trim().replace(/^["']|["']$/g, '');
-    const useWindowsAuth = process.env.DB_USE_WINDOWS_AUTH?.trim() === 'true';
+    const server = process.env['DB_CBO_SERVER'] || 'MRKREGDBVWQA43.DHLTD.CORP';
+    const database = process.env['DB_CBO_DATABASE'] || 'CBO_QA';
+    const user = process.env['DB_CBO_USER']?.trim();
+    const password = process.env['DB_CBO_PASSWORD']?.trim().replace(/^["']|["']$/g, '');
+    const useWindowsAuth = process.env['DB_USE_WINDOWS_AUTH']?.trim() === 'true';
 
     console.log('Database initialization:', {
       server,
@@ -83,8 +99,27 @@ export class DatabaseUtility {
     }
   }
 
-
-
+  /**
+   * Inserts test data into LMS staging tables for contract and debtor information.
+   *
+   * @param {ParsedTestData} testData - The test data object containing all fields to insert
+   * @returns {Promise<void>} Resolves when all data is successfully inserted
+   * @throws {Error} If database connection fails or insertion fails
+   *
+   * @remarks
+   * This method:
+   * - Generates unique IDs for contracts, transactions, and debtors
+   * - Processes date templates (e.g., $GetCurrentDate)
+   * - Inserts data into multiple staging tables
+   * - Stores generated IDs in class repositories for cleanup
+   * - Logs all operations to test-logs directory
+   *
+   * @example
+   * ```typescript
+   * const testData = TestDataManager.loadDataRow(1);
+   * await DatabaseUtility.insertStagingData(testData);
+   * ```
+   */
   static async insertStagingData(testData: ParsedTestData): Promise<void> {
     if (!this.config) this.initialize();
 
@@ -121,8 +156,8 @@ export class DatabaseUtility {
       const DebtorLN = this.generateLastName(testData.LastName);
       const APIID = this.generateAPIID(testData.APIid);
 
-      console.log('Generated firstname:',DebtorFN);
-      console.log('Generated lastname:',DebtorLN);
+     // console.log('Generated firstname:',DebtorFN);
+     // console.log('Generated lastname:',DebtorLN);
       this.contractRepo.push(contractID);
       this.transactionRepo.push(transactionID);
       this.registrationNumberRepo.push(registrationNumber);
@@ -133,7 +168,7 @@ export class DatabaseUtility {
       this.DebtorLNRepo.push(DebtorLN);
       this.APIIDRepo.push(APIID);
 
-      console.log('Generated values:');
+     /* console.log('Generated values:');
       console.log(`  Original reference: ${testData.Reference} -> Generated: ${reference}`);
       console.log(`  Original TransactionID: ${testData.TransactionId} -> Generated: ${transactionID}`);
       console.log(`  Original RegDate: ${testData.RegistrationDate} -> Generated: ${registrationDate}`);
@@ -141,7 +176,7 @@ export class DatabaseUtility {
       console.log(`  Generated ExpiryDate: ${expiryDate}`);
       console.log(`  Generated contractSerialCollateralID: ${contractSerialCollateralID}`);
       console.log('  Generated Firstname:', DebtorFN);
-      console.log('  Generated Lastname:', DebtorLN);
+      console.log('  Generated Lastname:', DebtorLN);*/
       const query = this.buildInsertQuery(
         contractID,
         transactionID,
@@ -181,13 +216,13 @@ export class DatabaseUtility {
 
       await pool.request().query(query);
 
-      console.log(`✓ Inserted TransactionId ${transactionID} into CBO DB Staging table`);
+     // console.log(`✓ Inserted TransactionId ${transactionID} into CBO DB Staging table`);
 
       await this.addRowDetailsToLogFile(testData, reference, transactionID, registrationNumber, registrationDate, expiryDate,contractSerialCollateralID);
 
       await pool.close();
     } catch (error) {
-      console.error('Error inserting data into LMS staging table:', error);
+      console.error('Error inserting data into CBO staging table:', error);
       console.error('Error details:', {
         message: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
@@ -318,15 +353,15 @@ return `${province}${timestamp}`;
 }
 
   private static processDate(dateTemplate: string): string {
-    if (dateTemplate === '$GetCurrentDateMinus35') {
+    // Support both old and new template names for backward compatibility
+    if (dateTemplate === '$GetCurrentDate' || dateTemplate === '$GetCurrentDateMinus35') {
       const date = new Date();
-      date.setDate(date.getDate());
-      return date.toISOString().split('T')[0];
+      return date.toISOString().split('T')[0] ?? '';
     }
     if (dateTemplate === '$GetCurrentDateMinus11Months') {
       const date = new Date();
       date.setMonth(date.getMonth() - 11);
-      return date.toISOString().split('T')[0];
+      return date.toISOString().split('T')[0] ?? '';
     }
     return dateTemplate;
   }
@@ -339,7 +374,7 @@ return `${province}${timestamp}`;
       const termYears = parseInt(term) || 0;
       const regDate = new Date(registrationDate);
       regDate.setFullYear(regDate.getFullYear() + termYears);
-      return regDate.toISOString().split('T')[0];
+      return regDate.toISOString().split('T')[0] ?? '';
     }
     return template;
   }
@@ -383,13 +418,13 @@ return `${province}${timestamp}`;
     const safeValue = (val: any): string => val ?? '';
 
     const vinContractInsert = `INSERT INTO [dbo].[StagingLienInfo] ([ContractId] ,[TransactionId] ,[TransactionCreatedDateTime] ,[CorporationCode] ,[BaseRegistrationNumber] ,[AmendmentDate] ,[AmendmentRegistrationNumber] ,[DischargeDate] ,[DischargeRegistrationNumber] ,[ExpiryDate] ,[JurisdictionCode] ,[LienStatusCode] ,[LoanAmount] ,[Reference] ,[RegistrationDate] ,[ServiceTypeCode] ,[Term] ,[TransactionStatusCode] ,[Processed] ,[IsDeleted] ,[CreatedDateTime] ,[UpdatedDateTime] ,[SequenceNumber] ,[AuditData]) VALUES ('${safeValue(contractID)}','${safeValue(TransactionId)}','${safeValue(TransactionCreatedDateTime)}','${safeValue(CorporationCode)}','${safeValue(BaseRegistrationNumber)}',NULL,NULL,NULL,NULL, '${safeValue(ExpiryDate)}', '${safeValue(LienJurisdictionCode)}', '${safeValue(LienStatusCode)}', ${safeValue(LoanAmount) || 0}, '${safeValue(Reference)}', '${safeValue(RegistrationDate)}', '${safeValue(ServiceTypeCode)}', ${Term || 0}, '${safeValue(TransactionStatusCode)}','', 0, GETDATE(), GETDATE(), 1, '')`;
-    console.log('Insert Query:', vinContractInsert);
+   // console.log('Insert Query:', vinContractInsert);
     const serialCollateralInsert = `INSERT INTO [dbo].[StagingSerialCollateral] ([TransactionId],[ContractSerialCollateralId] ,[SerialNumberOrVIN] ,[Make] ,[Model] ,[Year] ,[SequenceNumber],[SerialCollateralTypeDescription] ,[ModificationTypeCode],[IsDeleted] ,[CreatedDateTime] ,[UpdatedDateTime]) VALUES ('${safeValue(TransactionId)}','${safeValue(contractSerialCollateralID)}','${safeValue(SerialNumberOrVIN)}','${safeValue(Make)}','${safeValue(Model)}','${safeValue(Year)}',1,'${safeValue(SerialCollateralTypeDescription)}','ORIGINAL', 0, GETDATE(), GETDATE())`;
-    console.log('Insert Query:', serialCollateralInsert);
+   // console.log('Insert Query:', serialCollateralInsert);
     const debtorNameInsert = `INSERT INTO [dbo].[StagingDebtor] ([TransactionId],[ContractDebtorId] ,[FirstName] ,[MiddleName] ,[LastName] ,[DateOfBirth] ,[BusinessName],[ModificationTypeCode],[IsLVSGenerated],[IsSystemGenerated],[DebtorSourceTypeCode],[IsDeleted] ,[CreatedDateTime] ,[UpdatedDateTime]) VALUES ('${safeValue(TransactionId)}','${safeValue(contractDebtorID)}','${safeValue(DebtorFN)}','','${safeValue(DebtorLN)}','${(DateOfBirth)}','','ORIGINAL',0,0,'UI',0,GETDATE(), GETDATE())`;
-    console.log('Insert Query:', debtorNameInsert);   
+    // console.log('Insert Query:', debtorNameInsert);   
     const debtorAddressInsert = `INSERT INTO [dbo].[StagingDebtorAddress] ([TransactionId],[ContractDebtorId] ,[Address] ,[City] ,[JurisdictionCode] ,[JurisdictionName],[PostalOrZipCode] ,[CountryCode],[CountryName],[IsDeleted] ,[CreatedDateTime] ,[UpdatedDateTime]) VALUES ('${safeValue(TransactionId)}','${safeValue(contractDebtorID)}','${safeValue(Address)}','${safeValue(City)}','${safeValue(JurisdictionCode)}','','${safeValue(PostalOrZipCode)}','${safeValue(CountryCode)}','',0,GETDATE(), GETDATE())`;
-    console.log('Insert Query:', debtorAddressInsert);
+    // console.log('Insert Query:', debtorAddressInsert);
     const lienInfoUpdate = `
 DECLARE @BatchId UNIQUEIDENTIFIER = NEWID();
 UPDATE [dbo].[StagingLienInfo]

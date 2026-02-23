@@ -1,24 +1,25 @@
 import { test, expect, request } from '@playwright/test';
-import { TestDataManager } from '../testdata/test-data-manager';
-import type { ParsedTestData } from '../testdata/test-data.interface';
+import { TestDataManager } from '../utils/test-data-manager';
+import type { ParsedTestData } from '../utils/test-data.interface';
 import { DatabaseUtility } from '../utils/database-utility';
 import dotenv from 'dotenv';
 import path from 'path';
 dotenv.config();
-import { RCLogin } from '../pages/RCLogin';
-import { TriggerHangfireJob } from '../pages/HangfireJob';
-import { fetchAccessToken } from '../pages/CBO_Auth';
+import { RCLogin } from '../src/pages/RCLogin';
+import { TriggerHangfireJob } from '../src/pages/HangfireJob';
+import { fetchAccessToken } from '../src/pages/CBO_Auth';
 
-
-test.setTimeout(600000)
+// Test timeout configuration - 5 minutes maximum
+const TEST_TIMEOUT_MS = 5 * 60 * 1000;
+test.setTimeout(TEST_TIMEOUT_MS);
 const testCaseID = 'TC01_CBO_2under30Flag';
-const testDataPath = process.env.TEST_DATA_PATH || path.join(process.cwd(), 'testdata', 'CBO-Smoke-TestData.xlsx');
+const testDataPath = process.env['TEST_DATA_PATH'] || path.join(process.cwd(), 'fixtures', 'CBO-Smoke-TestData.xlsx');
 console.log(`[CBO Smoke] Start: ${testCaseID}`);
 console.log(`[CBO Smoke] Using test data path: ${testDataPath}`);
 TestDataManager.initialize(testDataPath, testCaseID);
 const testData: ParsedTestData = TestDataManager.loadDataRow(1); // Load first row
-console.log(`[CBO Smoke] Test Data Loaded: ${JSON.stringify(testData)}`);
-console.log(`[CBO Smoke] Loaded test data row 1`);
+//console.log(`[CBO Smoke] Test Data Loaded: ${JSON.stringify(testData)}`);
+//console.log(`[CBO Smoke] Loaded test data row 1`);
 
 test('CBO Debtor Lookup call', async ({ page }) => {
   // Clear repos (access statics)
@@ -37,29 +38,35 @@ test('CBO Debtor Lookup call', async ({ page }) => {
 
   expect(contractRepo.length).toBeGreaterThan(0);
 
-  await RCLogin.login(page, process.env.baseURL || '', process.env.username || '', process.env.password || '');
+  await RCLogin.login(page, process.env['baseURL'] || '', process.env['username'] || '', process.env['password'] || '');
   // Get processing jobs count using the new function
   await TriggerHangfireJob(page);
   
-      console.log('Reused Generated Values:', {
+    /*  console.log('Reused Generated Values:', {
         generatedAPIID,
         generatedFN,
         generatedLN
-      });
+      });*/
   
    
-          // Fetch access token
+      // Fetch access token
       const accessToken = await fetchAccessToken();
-      console.log('Access Token:', accessToken.access_token);
-  
-      // Define the API endpoint
-      const apiUrl = 'http://qa.cbo.dhltd.corp/api/Lookup/Debtor';
+    //  console.log('Access Token:', accessToken.access_token);
+
+      // Define the API endpoint from environment variable
+      const apiBaseUrl = process.env['CBO_API_BASE_URL'];
+      if (!apiBaseUrl) {
+        throw new Error('Missing CBO_API_BASE_URL environment variable');
+      }
+      const apiUrl = `${apiBaseUrl!}/Lookup/Debtor`;
   
       // Initialize TestDataManager and load data
      
          // Build the request payload
          testData.APIyear=String(testData.APIyear);
-        testData.APIdateOfBirth = new Date(testData.APIdateOfBirth).toISOString().split('T')[0]; // Format: YYYY-MM-DD
+        testData.APIdateOfBirth = String(testData.APIdateOfBirth
+          ? new Date(testData.APIdateOfBirth).toISOString().split('T')[0]
+          : ''); // Format: YYYY-MM-DD, fallback to empty string if undefined
   
          
       const requestData = {
@@ -109,7 +116,7 @@ test('CBO Debtor Lookup call', async ({ page }) => {
         }
       };
       const requestJson = JSON.stringify(requestData);
-      console.log('Request Data:', requestJson);
+     // console.log('Request Data:', requestJson);
       // Make the API request
       const apiContext = await request.newContext();
       const response = await apiContext.post(apiUrl, {
@@ -126,7 +133,7 @@ test('CBO Debtor Lookup call', async ({ page }) => {
   const rawText = await response.text();
   
   console.log('HTTP status:', status);
-  console.log('Raw response:', rawText);
+  //console.log('Raw response:', rawText);
   
   expect(status).toBe(200);
   
@@ -135,8 +142,8 @@ test('CBO Debtor Lookup call', async ({ page }) => {
   
   expect(responseBody).toHaveProperty('cboFound');
   expect(responseBody).toHaveProperty('cboTypes');
-  
-  
+
+
   });
-  
- 
+
+// Summary report is now generated automatically by the custom reporter in playwright.config.ts
