@@ -2,8 +2,8 @@
 
 ## Test Execution Overview
 
-**Date & Time:** February 23, 2026 at 2:16 PM EST
-**Total Duration:** 1 minute 18 seconds
+**Date & Time:** February 24, 2026 at 5:00 PM EST
+**Total Duration:** 1 minute 7 seconds
 **Environment:** CBO QA
 
 ---
@@ -25,7 +25,7 @@
 
 ### Test: CBO Debtor Lookup call
 - **Status:** ✓ Passed
-- **Duration:** 1 minute 13 seconds
+- **Duration:** 1 minute 3 seconds
 - **Browser:** Chromium (Desktop Chrome)
 - **Test File:** Debtorlookup.spec.ts
 
@@ -37,12 +37,32 @@
 
 #### API Response:
 - **HTTP Status:** 200
+- **Application ID:** 20260224_170009
+- **Jurisdiction:** Ontario (ON)
 
 #### API Response Body:
 ```json
 {
-  "note": "Raw response (could not parse as JSON)",
-  "raw": "{\n  applicationId: '20260223_141641',\n  cboFound: true,\n  cboTypes: [\n    {\n      description: 'A registration from a different lender already exists.',\n      type: 'TWO_UNDER_THIRTY'\n    }\n  ],\n  debtorId: '20260223_141641',\n  lenderCount: 1,\n  registrationCount: 1,\n  registrationInformation: [\n    {\n      cmsLenderCode: 'CIBC',\n      cmsParentLenderCode: 'CIBC',\n      date: '2026-02-23T00:00:00',\n      jurisdiction: 'ON'\n    }\n  ],\n  requestId: '94a510ba-3353-48fd-9b88-edc35d3fa4d0'\n}"
+  "applicationId": "20260224_170009",
+  "cboFound": true,
+  "cboTypes": [
+    {
+      "description": "A registration from a different lender already exists.",
+      "type": "TWO_UNDER_THIRTY"
+    }
+  ],
+  "debtorId": "20260224_170009",
+  "lenderCount": 1,
+  "registrationCount": 1,
+  "registrationInformation": [
+    {
+      "cmsLenderCode": "CIBC",
+      "cmsParentLenderCode": "CIBC",
+      "date": "2026-02-24T00:00:00",
+      "jurisdiction": "ON"
+    }
+  ],
+  "requestId": "1a1d5c33-4ac2-4167-b381-bbcdc174514b"
 }
 ```
 
@@ -57,4 +77,4 @@ All smoke tests passed successfully. The CBO Debtor Lookup functionality is work
 ---
 
 *Report generated from automated test run*
-*Test logs saved to: test-logs\TestDataLog_2026-02-23.csv*
+*Test logs saved to: test-logs\TestDataLog_2026-02-24.csv*

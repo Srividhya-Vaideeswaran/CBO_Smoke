@@ -138,7 +138,7 @@ test('CBO Debtor Lookup call', async ({ page }) => {
   expect(status).toBe(200);
   
   const responseBody = rawText ? JSON.parse(rawText) : {};
-  console.log(responseBody);
+  console.log(JSON.stringify(responseBody));
   
   expect(responseBody).toHaveProperty('cboFound');
   expect(responseBody).toHaveProperty('cboTypes');
