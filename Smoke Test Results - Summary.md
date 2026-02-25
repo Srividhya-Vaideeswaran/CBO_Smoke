@@ -2,8 +2,8 @@
 
 ## Test Execution Overview
 
-**Date & Time:** February 24, 2026 at 5:00 PM EST
-**Total Duration:** 1 minute 7 seconds
+**Date & Time:** February 25, 2026 at 7:27 PM UTC
+**Total Duration:** 1 minute 11 seconds
 **Environment:** CBO QA
 
 ---
@@ -37,13 +37,13 @@
 
 #### API Response:
 - **HTTP Status:** 200
-- **Application ID:** 20260224_170009
+- **Application ID:** 20260225_192728
 - **Jurisdiction:** Ontario (ON)
 
 #### API Response Body:
 ```json
 {
-  "applicationId": "20260224_170009",
+  "applicationId": "20260225_192728",
   "cboFound": true,
   "cboTypes": [
     {
@@ -51,18 +51,18 @@
       "type": "TWO_UNDER_THIRTY"
     }
   ],
-  "debtorId": "20260224_170009",
+  "debtorId": "20260225_192728",
   "lenderCount": 1,
   "registrationCount": 1,
   "registrationInformation": [
     {
       "cmsLenderCode": "CIBC",
       "cmsParentLenderCode": "CIBC",
-      "date": "2026-02-24T00:00:00",
+      "date": "2026-02-25T00:00:00",
       "jurisdiction": "ON"
     }
   ],
-  "requestId": "1a1d5c33-4ac2-4167-b381-bbcdc174514b"
+  "requestId": "f56d9235-ff39-4434-b92d-b420785d9762"
 }
 ```
 
@@ -77,4 +77,4 @@ All smoke tests passed successfully. The CBO Debtor Lookup functionality is work
 ---
 
 *Report generated from automated test run*
-*Test logs saved to: test-logs\TestDataLog_2026-02-24.csv*
+*Test logs saved to: test-logs\TestDataLog_2026-02-25.csv*

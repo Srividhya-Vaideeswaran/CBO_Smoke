@@ -256,7 +256,8 @@ function extractKeyInfo(stdout: Array<{ text: string }>): {
 
 function generateReport() {
   const resultsPath = path.join(__dirname, '..', 'test-results', 'test-results.json');
-  const outputPath = path.join(__dirname, '..', 'Smoke Test Results - Summary.md');
+  // Generate summary in test-results directory so it's available when running in Docker
+  const outputPath = path.join(__dirname, '..', 'test-results', 'Smoke Test Results - Summary.md');
 
   // Check if results file exists
   if (!fs.existsSync(resultsPath)) {

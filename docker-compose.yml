@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  cbo-smoke-tests:
+    build: .
+    container_name: cbo-smoke-tests
+    volumes:
+      # Mount directories to persist results on host
+      - ./test-results:/app/test-results
+      - ./test-logs:/app/test-logs
+      - ./playwright-report:/app/playwright-report
+    environment:
+      # Environment variables are already in .env file which is copied into the image
+      - CI=false

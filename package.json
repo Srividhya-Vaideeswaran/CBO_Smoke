@@ -15,13 +15,16 @@
     "@playwright/test": "1.57.0",
     "@types/mssql": "^9.1.9",
     "@types/node": "^25.1.0",
-    "@types/ssh2-sftp-client": "^9.0.6"
+    "@types/ssh2-sftp-client": "^9.0.6",
+    "typescript": "^5.9.3"
   },
   "scripts": {
     "test": "playwright test",
     "test:only": "playwright test",
     "test:ui": "playwright test --ui",
     "test:debug": "playwright test --debug",
-    "summary": "npx tsx scripts/generate-summary-report.ts"
+    "summary": "npx tsx scripts/generate-summary-report.ts",
+    "build": "npx tsc -p tsconfig.json",
+    "smoke": "npx playwright test"
   }
 }
